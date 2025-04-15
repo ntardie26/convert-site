@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Format Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        select, textarea {
+            width: 100%;
+            padding: 5px;
+        }
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #swap {
+            align-self: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Format Converter</h1>
+    <div class="container">
+        <div class="row">
+            <div style="flex: 1;">
+                <select id="from_format">
+                    <option value="hex">Hexadecimal</option>
+                    <option value="decimal">Decimal</option>
+                    <option value="binary">Binary</option>
+                    <option value="text" selected>Text</option>
+                </select>
+            </div>
+            <button id="swap">Swap</button>
+            <div style="flex: 1;">
+                <select id="to_format">
+                    <option value="hex">Hexadecimal</option>
+                    <option value="decimal">Decimal</option>
+                    <option value="binary" selected>Binary</option>
+                    <option value="text">Text</option>
+                </select>
+            </div>
+        </div>
+        <textarea id="input_text" rows="5" placeholder="Enter text to convert"></textarea>
+        <button id="convert">Convert</button>
+        <textarea id="result" rows="5" readonly placeholder="Result will appear here"></textarea>
+    </div>
+
+    <script>
+        document.getElementById('convert').addEventListener('click', function() {
+            const inputText = document.getElementById('input_text').value;
+            const fromFormat = document.getElementById('from_format').value;
+            const toFormat = document.getElementById('to_format').value;
+            
+            fetch('/convert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'input_text': inputText,
+                    'from_format': fromFormat,
+                    'to_format': toFormat
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').value = data.result;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('result').value = 'Error occurred during conversion';
+            });
+        });
+        
+        document.getElementById('swap').addEventListener('click', function() {
+            const fromSelect = document.getElementById('from_format');
+            const toSelect = document.getElementById('to_format');
+            const fromValue = fromSelect.value;
+            
+            fromSelect.value = toSelect.value;
+            toSelect.value = fromValue;
+            
+            const resultText = document.getElementById('result').value;
+            if (resultText) {
+                document.getElementById('input_text').value = resultText;
+                document.getElementById('result').value = '';
+            }
+        });
+    </script>
+</body>
+</html>
